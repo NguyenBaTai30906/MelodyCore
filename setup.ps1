@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+Write-Host "DEBUG: v2.1 (Fix Change-Dir)" -ForegroundColor Magenta
 
 # Detect if running from script file or web content
 $scriptPath = $MyInvocation.MyCommand.Path
