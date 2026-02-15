@@ -72,7 +72,6 @@ if (-not (Test-Path $depsDir)) {
 # ... (Bootstrap logic remains above)
 
 function Setup-PhongRust {
-    Change-Dir "setup.ps1" # Ensure context
     Write-Host "`n=== Setting up Phong VSTRA (Rust) ===" -ForegroundColor Cyan
     
     # 2. Download Libs
