@@ -1,0 +1,19 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Go
+bin/
+*.exe
+*.dll
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Auto-downloaded dependencies
+/deps/
+
+# Pending Projects
+aiduaemve-go/

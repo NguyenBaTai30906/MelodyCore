@@ -1,0 +1,10 @@
+# Build
+/target/
+Cargo.lock
+
+# SDL2 dev libs (large, not needed on GitHub)
+/SDL2-devel/
+
+# Temp files
+*.txt
+!README.md
