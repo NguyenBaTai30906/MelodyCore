@@ -115,18 +115,47 @@ function Setup-PhongRust {
     Write-Host "Run 'cargo run' inside 'phong-rust' folder to start." -ForegroundColor Yellow
 }
 
+function Install-Go {
+    Write-Host "Go compiler not found. Automatically installing Go..." -ForegroundColor Yellow
+    
+    $goMsiUrl = "https://go.dev/dl/go1.22.4.windows-amd64.msi"
+    $goMsiPath = Join-Path $env:TEMP "go_installer.msi"
+    
+    Write-Host "Downloading Go installer (MSI)..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $goMsiUrl -OutFile $goMsiPath
+    
+    Write-Host "Installing Go silently (requires Admin privileges)..." -ForegroundColor Cyan
+    $process = Start-Process msiexec.exe -ArgumentList "/i `"$goMsiPath`" /quiet /qn /norestart" -Wait -PassThru
+    
+    if ($process.ExitCode -eq 0) {
+        Write-Host "Go installed successfully!" -ForegroundColor Green
+        # Refresh session PATH
+        $env:PATH += ";C:\Program Files\Go\bin"
+    } else {
+        Write-Host "Go installation failed with ExitCode: $($process.ExitCode)" -ForegroundColor Red
+        Write-Host "Please install Go manually from https://go.dev/dl/"
+    }
+    
+    Remove-Item $goMsiPath -Force
+}
+
 function Setup-AiDuaEmVeGo {
     Write-Host "`n=== Setting up Ai dua em ve (Go) ===" -ForegroundColor Cyan
     
-    $goPath = "C:\Program Files\Go\bin\go.exe"
-    if (-not (Test-Path $goPath)) {
-        $goPath = "go" # Try PATH
+    # Check if go is available in session
+    if (-not (Get-Command "go" -ErrorAction SilentlyContinue)) {
+        # Check standard installation path
+        if (Test-Path "C:\Program Files\Go\bin\go.exe") {
+             $env:PATH += ";C:\Program Files\Go\bin"
+        } else {
+            # Not found anywhere, install it
+            Install-Go
+        }
     }
     
-    try {
-        & $goPath version | Out-Null
-    } catch {
-        Write-Error "Go compiler not found! Please install Go from https://go.dev/dl/"
+    $goPath = Get-Command "go" -ErrorAction SilentlyContinue
+    if (-not $goPath) {
+        Write-Error "Go compiler still not found! Setup aborted."
         return
     }
 
@@ -138,10 +167,10 @@ function Setup-AiDuaEmVeGo {
     
     Set-Location $goDir
     Write-Host "Installing dependencies..." -ForegroundColor Cyan
-    & $goPath mod tidy
+    & go mod tidy
     
     Write-Host "Running Ai dua em ve..." -ForegroundColor Green
-    & $goPath run .
+    & go run .
 }
 
 # === Main Menu ===
