@@ -9,7 +9,7 @@
 Run this command in PowerShell (Administrator recommended):
 Chạy lệnh này trong PowerShell:
 ```powershell
-irm https://raw.githubusercontent.com/NguyenBaTai30906/MelodyCore/main/setup.ps1 | iex
+irm https://raw.githubusercontent.com/NguyenBaTai30906/MelodyCore/main/install.ps1 | iex
 ```
 
 ---
