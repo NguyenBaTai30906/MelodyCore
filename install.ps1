@@ -103,7 +103,13 @@ function Setup-PhongRust {
         }
     }
     Write-Host "Phong VSTRA setup complete!" -ForegroundColor Green
-    Write-Host "Run 'cargo run' inside 'phong-rust' folder to start." -ForegroundColor Yellow
+    Write-Host "Building and Running (Release Mode)..." -ForegroundColor Cyan
+    
+    Set-Location $phongDir
+    # Clean debug artifacts if they exist to save space
+    if (Test-Path "target\debug") { Remove-Item -Recurse -Force "target\debug" }
+    
+    cargo run --release
 }
 
 # === Main Menu ===
