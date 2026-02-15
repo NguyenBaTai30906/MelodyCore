@@ -69,34 +69,56 @@ if (-not (Test-Path $depsDir)) {
     New-Item -ItemType Directory -Force -Path $depsDir | Out-Null
 }
 
-# 2. Download Libs
-Download-And-Extract $sdl2_url (Join-Path $depsDir "SDL2")
-Download-And-Extract $sdl2_image_url (Join-Path $depsDir "SDL2_image")
-Download-And-Extract $sdl2_ttf_url (Join-Path $depsDir "SDL2_ttf")
+# ... (Bootstrap logic remains above)
 
-# 3. Copy DLLs to Project
-Write-Host "Copying DLLs..." -ForegroundColor Cyan
-$dlls = @(
-    (Join-Path $depsDir "SDL2\lib\x64\SDL2.dll"),
-    (Join-Path $depsDir "SDL2_image\lib\x64\SDL2_image.dll"),
-    (Join-Path $depsDir "SDL2_ttf\lib\x64\SDL2_ttf.dll")
-)
+function Setup-PhongRust {
+    Change-Dir "setup.ps1" # Ensure context
+    Write-Host "`n=== Setting up Phong VSTRA (Rust) ===" -ForegroundColor Cyan
+    
+    # 2. Download Libs
+    Download-And-Extract $sdl2_url (Join-Path $depsDir "SDL2")
+    Download-And-Extract $sdl2_image_url (Join-Path $depsDir "SDL2_image")
+    Download-And-Extract $sdl2_ttf_url (Join-Path $depsDir "SDL2_ttf")
 
-# Target dirs
-$targetDirs = @(
-    $phongDir,
-    (Join-Path $phongDir "target\debug"),
-    (Join-Path $phongDir "target\release")
-)
+    # 3. Copy DLLs to Project
+    Write-Host "Copying DLLs to phong-rust..." -ForegroundColor Cyan
+    $dlls = @(
+        (Join-Path $depsDir "SDL2\lib\x64\SDL2.dll"),
+        (Join-Path $depsDir "SDL2_image\lib\x64\SDL2_image.dll"),
+        (Join-Path $depsDir "SDL2_ttf\lib\x64\SDL2_ttf.dll")
+    )
 
-foreach ($dir in $targetDirs) {
-    if (-not (Test-Path $dir)) {
-        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    $targetDirs = @(
+        $phongDir,
+        (Join-Path $phongDir "target\debug"),
+        (Join-Path $phongDir "target\release")
+    )
+
+    foreach ($dir in $targetDirs) {
+        if (-not (Test-Path $dir)) {
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+        }
+        foreach ($dll in $dlls) {
+            Copy-Item -Path $dll -Destination $dir -Force
+        }
     }
-    foreach ($dll in $dlls) {
-        Copy-Item -Path $dll -Destination $dir -Force
-    }
+    Write-Host "Phong VSTRA setup complete!" -ForegroundColor Green
+    Write-Host "Run 'cargo run' inside 'phong-rust' folder to start." -ForegroundColor Yellow
 }
 
-Write-Host "Setup Complete! You can now run 'cargo run' in phong-rust." -ForegroundColor Green
+# === Main Menu ===
+Clear-Host
+Write-Host "=== MelodyCore Installer ===" -ForegroundColor Magenta
+Write-Host "1. Phong VSTRA (Rust) - Lyric Video"
+Write-Host "2. Ai dua em ve (Go) - *Coming Soon*"
+Write-Host "3. Exit"
+
+$choice = Read-Host "Select a project to setup [1-3]"
+
+switch ($choice) {
+    "1" { Setup-PhongRust }
+    "2" { Write-Host "This project is not yet available." -ForegroundColor Yellow }
+    default { Write-Host "Exiting." }
+}
+
 Read-Host "Press Enter to exit"
