@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/png"
+	_ "image/jpeg"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
@@ -42,12 +41,13 @@ type App struct {
 	timer          int
 	displayedWords int
 	lineDone       bool
-	lineEndTime    int
 	fadeTimer      int
+	totalTicks     int
 
 	audioCtx    *audio.Context
 	audioPlayer *audio.Player
 	bgImages    []*ebiten.Image
+	meters      []*ebiten.Image
 }
 
 func NewApp() *App {
@@ -55,38 +55,28 @@ func NewApp() *App {
 		verses: GetVerses(),
 	}
 
-	// Generate 3 gradient backgrounds (1 high cortisol, 2 low cortisol)
-	gradients := []struct {
-		r1, g1, b1 uint8
-		r2, g2, b2 uint8
-	}{
-		{180, 40, 80, 40, 10, 60},  // High cortisol: vibrant pink
-		{20, 30, 80, 10, 15, 40},   // Low cortisol 1: deep night blue
-		{40, 25, 60, 15, 10, 35},   // Low cortisol 2: soft purple
+	// Load 3 Bocchi backgrounds
+	for i := 0; i < 3; i++ {
+		path := fmt.Sprintf("resources/img/bg%d.png", i)
+		data, err := os.ReadFile(path)
+		if err == nil {
+			img, _, _ := image.Decode(bytes.NewReader(data))
+			g.bgImages = append(g.bgImages, ebiten.NewImageFromImage(img))
+		} else {
+			fmt.Printf("⚠ Failed to load bg: %s\n", path)
+		}
 	}
 
-	imgDir := "img"
-	os.MkdirAll(imgDir, 0755)
-
-	for i, grad := range gradients {
-		img := image.NewRGBA(image.Rect(0, 0, screenWidth, screenHeight))
-		for y := 0; y < screenHeight; y++ {
-			t := float64(y) / float64(screenHeight)
-			r := uint8(float64(grad.r1)*(1-t) + float64(grad.r2)*t)
-			g := uint8(float64(grad.g1)*(1-t) + float64(grad.g2)*t)
-			b := uint8(float64(grad.b1)*(1-t) + float64(grad.b2)*t)
-			for x := 0; x < screenWidth; x++ {
-				img.Set(x, y, color.RGBA{r, g, b, 255})
-			}
+	// Load 2 Cortisol meters
+	meterPaths := []string{"resources/img/meter_high.png", "resources/img/meter_low.png"}
+	for _, p := range meterPaths {
+		data, err := os.ReadFile(p)
+		if err == nil {
+			img, _, _ := image.Decode(bytes.NewReader(data))
+			g.meters = append(g.meters, ebiten.NewImageFromImage(img))
+		} else {
+			fmt.Printf("⚠ Failed to load meter: %s\n", p)
 		}
-		// Save as PNG
-		path := filepath.Join(imgDir, fmt.Sprintf("%d.png", i))
-		f, _ := os.Create(path)
-		if f != nil {
-			png.Encode(f, img)
-			f.Close()
-		}
-		g.bgImages = append(g.bgImages, ebiten.NewImageFromImage(img))
 	}
 
 	// Init audio
@@ -121,56 +111,86 @@ func (g *App) Update() error {
 
 	g.timer++
 	g.fadeTimer++
-	verse := g.verses[g.currentIdx]
+	g.totalTicks++
 
-	words := strings.Fields(verse.T)
-	totalWords := len(words)
+	verse := g.verses[g.currentIdx]
+	totalWords := len(verse.Words)
 
 	if !g.lineDone {
-		if verse.WD == 0 {
-			g.displayedWords = totalWords
-			g.lineDone = true
-			g.lineEndTime = g.timer
-		} else if g.timer%verse.WD == 0 && g.displayedWords < totalWords {
-			g.displayedWords++
-			if g.displayedWords >= totalWords {
-				g.lineDone = true
-				g.lineEndTime = g.timer
+		if g.displayedWords < totalWords {
+			currentWord := verse.Words[g.displayedWords]
+			if g.timer >= currentWord.Delay {
+				g.displayedWords++
+				g.timer = 0
+				if g.displayedWords >= totalWords {
+					g.lineDone = true
+				}
 			}
 		}
-	}
-
-	if g.lineDone && (g.timer-g.lineEndTime) >= verse.LD {
-		g.prevIdx = g.currentIdx
-		g.currentIdx++
-		g.timer = 0
-		g.displayedWords = 0
-		g.lineDone = false
-		g.lineEndTime = 0
-		g.fadeTimer = 0
+	} else {
+		if g.timer >= verse.LD {
+			g.prevIdx = g.currentIdx
+			g.currentIdx++
+			g.timer = 0
+			g.displayedWords = 0
+			g.lineDone = false
+			g.fadeTimer = 0
+		}
 	}
 
 	return nil
 }
 
 func (g *App) Draw(screen *ebiten.Image) {
+	// BG Logic: 0-3 (V1) = bg0, 4-7 (C1) = bg1, 8-12 (C2/Outro) = bg2
+	getBgIdx := func(idx int) int {
+		if idx < 4 {
+			return 0
+		} else if idx < 8 {
+			return 1
+		}
+		return 2
+	}
+
 	// Draw background with crossfade
 	if len(g.bgImages) > 0 {
-		currBg := g.currentIdx % len(g.bgImages)
-		prevBg := g.prevIdx % len(g.bgImages)
-		fadeDur := 20
+		currBg := getBgIdx(g.currentIdx) % len(g.bgImages)
+		prevBg := getBgIdx(g.prevIdx) % len(g.bgImages)
+		fadeDur := 30
 
-		if g.fadeTimer < fadeDur && g.currentIdx != g.prevIdx {
+		if g.fadeTimer < fadeDur && g.currentIdx != g.prevIdx && currBg != prevBg {
 			op1 := &ebiten.DrawImageOptions{}
+			w1, h1 := g.bgImages[prevBg].Bounds().Dx(), g.bgImages[prevBg].Bounds().Dy()
+			op1.GeoM.Scale(float64(screenWidth)/float64(w1), float64(screenHeight)/float64(h1))
 			screen.DrawImage(g.bgImages[prevBg], op1)
+
 			op2 := &ebiten.DrawImageOptions{}
+			w2, h2 := g.bgImages[currBg].Bounds().Dx(), g.bgImages[currBg].Bounds().Dy()
+			op2.GeoM.Scale(float64(screenWidth)/float64(w2), float64(screenHeight)/float64(h2))
 			op2.ColorScale.ScaleAlpha(float32(g.fadeTimer) / float32(fadeDur))
 			screen.DrawImage(g.bgImages[currBg], op2)
 		} else {
-			screen.DrawImage(g.bgImages[currBg], nil)
+			op := &ebiten.DrawImageOptions{}
+			w, h := g.bgImages[currBg].Bounds().Dx(), g.bgImages[currBg].Bounds().Dy()
+			op.GeoM.Scale(float64(screenWidth)/float64(w), float64(screenHeight)/float64(h))
+			screen.DrawImage(g.bgImages[currBg], op)
 		}
 	} else {
 		screen.Fill(color.RGBA{20, 20, 40, 255})
+	}
+
+	// Draw Cortisol Meter in Bottom-Right
+	if len(g.meters) > 0 {
+		meterIdx := 0 // High
+		if g.currentIdx >= 4 {
+			meterIdx = 1 // Low
+		}
+		img := g.meters[meterIdx%len(g.meters)]
+		op := &ebiten.DrawImageOptions{}
+		mw, mh := 200.0, 150.0
+		op.GeoM.Scale(mw/float64(img.Bounds().Dx()), mh/float64(img.Bounds().Dy()))
+		op.GeoM.Translate(float64(screenWidth)-mw-20, float64(screenHeight)-mh-20)
+		screen.DrawImage(img, op)
 	}
 
 	// Draw scanlines effect
@@ -179,14 +199,12 @@ func (g *App) Draw(screen *ebiten.Image) {
 	// Draw lyrics
 	if g.currentIdx < len(g.verses) && fontSource != nil {
 		verse := g.verses[g.currentIdx]
-		words := strings.Fields(verse.T)
-
 		displayed := ""
-		for i := 0; i < g.displayedWords && i < len(words); i++ {
+		for i := 0; i < g.displayedWords && i < len(verse.Words); i++ {
 			if i > 0 {
 				displayed += " "
 			}
-			displayed += words[i]
+			displayed += verse.Words[i].Text
 		}
 
 		if displayed != "" {
@@ -194,25 +212,23 @@ func (g *App) Draw(screen *ebiten.Image) {
 				Source: fontSource,
 				Size:   verse.S,
 			}
-
-			// Measure text for centering
 			w, h := text.Measure(displayed, face, 0)
 			x := float64(verse.X) - w/2
 			y := float64(verse.Y) - h/2
 
-			// Shadow
 			shadowOp := &text.DrawOptions{}
 			shadowOp.GeoM.Translate(x+3, y+3)
 			shadowOp.ColorScale.ScaleWithColor(color.RGBA{0, 0, 0, 150})
 			text.Draw(screen, displayed, face, shadowOp)
 
-			// Main text
 			mainOp := &text.DrawOptions{}
 			mainOp.GeoM.Translate(x, y)
 			mainOp.ColorScale.ScaleWithColor(verse.C)
 			text.Draw(screen, displayed, face, mainOp)
 		}
 	}
+
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("Ai Dua Em Ve - TIA | MelodyCore (Go)\nTotal Ticks: %d", g.totalTicks))
 }
 
 func (g *App) Layout(outsideWidth, outsideHeight int) (int, int) {

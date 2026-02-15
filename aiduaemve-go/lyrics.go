@@ -2,19 +2,26 @@ package main
 
 import "image/color"
 
-// V is the verse struct - mirrors Rust's compact naming
-type V struct {
-	T  string     // Text
-	WD int        // WordDelay (ticks between words, 60 ticks = 1s)
-	LD int        // LineDelay (ticks to hold after line finishes)
-	C  color.RGBA // Color
-	X  int        // X position
-	Y  int        // Y position
-	S  float64    // Font size
+// Word represents a single word with its specific delay
+type Word struct {
+	Text  string
+	Delay int // Ticks to wait AFTER this word appears before showing the next
 }
 
+// V is the verse struct - now supports per-word timing
+type V struct {
+	Words []Word     // List of words with their delays
+	LD    int        // LineDelay (ticks to hold entire line after last word)
+	C     color.RGBA // Color
+	X     int        // X position
+	Y     int        // Y position
+	S     float64    // Font size
+}
+
+func W(t string, d int) Word { return Word{t, d} }
+
 // GetVerses returns lyrics timed to fit ~23 seconds total
-// 23s * 60 TPS = 1380 ticks budget
+// 23s * 60 TPS = 1380 ticks budget (440 + 430 + 510)
 func GetVerses() []V {
 	wht := color.RGBA{255, 255, 255, 255}
 	crm := color.RGBA{255, 245, 220, 255}
@@ -25,27 +32,75 @@ func GetVerses() []V {
 	cy := screenHeight / 2
 
 	return []V{
-		// Verse 1 (1380 Ticks total target)
-		{"Đêm nay,", 0, 40, pnk, cx + 80, cy + 40, 34},               // 40
-		{"sẽ thật dài", 5, 60, pnk, cx + 80, cy + 40, 34},            // 15+60=75  (Sum: 115)
-		{"Em cũng đã mệt nhoài", 5, 70, crm, cx - 80, cy - 20, 34},   // 25+70=95  (Sum: 210)
-		{"Sương rơi đêm lạnh đầy", 5, 70, cyn, cx + 40, cy + 60, 36}, // 25+70=95  (Sum: 305)
-		{"Vậy thì ai đưa em về đêm nay?", 4, 80, wht, cx, cy, 38},    // 32+80=112 (Sum: 417)
+		// === Verse 1 (Sum: 440) ===
+		{
+			Words: []Word{W("Đêm", 5), W("nay,", 35), W("sẽ", 5), W("thật", 5), W("dài", 5)}, // sum: 55
+			LD:    45,                                                                        // total: 100
+			C:     pnk, X: cx, Y: cy, S: 34,
+		},
+		{
+			Words: []Word{W("Em", 6), W("cũng", 6), W("đã", 6), W("mệt", 6), W("nhoài", 6)}, // sum: 30
+			LD:    70,                                                                       // total: 100
+			C:     crm, X: cx, Y: cy, S: 34,
+		},
+		{
+			Words: []Word{W("Sương", 5), W("rơi", 35), W("đêm", 5), W("lạnh", 5), W("đầy", 5)}, // sum: 55
+			LD:    45,                                                                          // total: 100
+			C:     cyn, X: cx, Y: cy, S: 36,
+		},
+		{
+			Words: []Word{W("Vậy", 5), W("thì", 5), W("ai", 5), W("đưa", 5), W("em", 5), W("về", 5), W("đêm", 5), W("nay?", 5)}, // sum: 40
+			LD:    100,                                                                                                          // total: 140
+			C:     wht, X: cx, Y: cy, S: 38,
+		},
 
-		// Chorus
-		{"Take me back back home", 4, 70, pnk, cx - 120, cy - 40, 40},   // 20+70=90  (Sum: 507)
-		{"Đường về cũng chẳng có xa", 5, 70, crm, cx + 60, cy + 50, 36}, // 30+70=100 (Sum: 607)
-		{"Đưa em về qua ba ngã năm", 5, 70, cyn, cx - 40, cy, 34},       // 35+70=105 (Sum: 712)
-		{"Năm ngã ba là nhà", 5, 90, wht, cx + 100, cy - 60, 38},        // 25+90=115 (Sum: 827)
+		// === Chorus (Sum: 430) ===
+		{
+			Words: []Word{W("Take", 6), W("me", 6), W("back", 6), W("back", 6), W("home", 6)}, // sum: 30
+			LD:    70,                                                                         // total: 100
+			C:     pnk, X: cx, Y: cy, S: 40,
+		},
+		{
+			Words: []Word{W("Đường", 6), W("về", 6), W("cũng", 6), W("chẳng", 6), W("có", 6), W("xa", 6)}, // sum: 36
+			LD:    64,                                                                                     // total: 100
+			C:     crm, X: cx, Y: cy, S: 36,
+		},
+		{
+			Words: []Word{W("Đưa", 6), W("em", 6), W("về", 6), W("qua", 6), W("ba", 6), W("ngã", 6), W("năm", 6)}, // sum: 42
+			LD:    68,                                                                                             // total: 110
+			C:     cyn, X: cx, Y: cy, S: 34,
+		},
+		{
+			Words: []Word{W("Năm", 8), W("ngã", 8), W("ba", 8), W("là", 8), W("nhà", 8)}, // sum: 40
+			LD:    80,                                                                    // total: 120
+			C:     wht, X: cx, Y: cy, S: 38,
+		},
 
-		// Chorus 2
-		{"Take me back back home", 4, 70, pnk, cx + 80, cy + 30, 40},     // 20+70=90  (Sum: 917)
-		{"Đường về cũng chẳng có xa", 4, 70, crm, cx - 100, cy - 50, 36}, // 24+70=94  (Sum: 1011)
-		{"Đêm khuya rồi sao không có ai?", 4, 80, cyn, cx, cy + 80, 36},  // 28+80=108 (Sum: 1119)
-		{"Đưa em đi về nhà.", 5, 80, wht, cx - 40, cy, 38},               // 25+80=105 (Sum: 1224)
-
-		// Outro: 1380 - 1224 = 156 ticks total
-		// Word count 3 * 8 = 24. LD = 156 - 24 = 132.
-		{"Là la laa...", 8, 132, pnk, cx, cy, 44}, // 24+132=156 (Total: 1380)
+		// === Chorus 2 (Sum: 510) ===
+		{
+			Words: []Word{W("Take", 6), W("me", 6), W("back", 6), W("back", 6), W("home", 6)}, // sum: 30
+			LD:    70,                                                                         // total: 100
+			C:     pnk, X: cx, Y: cy, S: 40,
+		},
+		{
+			Words: []Word{W("Đường", 6), W("về", 6), W("cũng", 6), W("chẳng", 6), W("có", 6), W("xa", 6)}, // sum: 36
+			LD:    64,                                                                                     // total: 100
+			C:     crm, X: cx, Y: cy, S: 36,
+		},
+		{
+			Words: []Word{W("Đêm", 6), W("khuya", 6), W("rồi", 6), W("sao", 6), W("không", 6), W("có", 6), W("ai?", 6)}, // sum: 42
+			LD:    68,                                                                                                   // total: 110
+			C:     cyn, X: cx, Y: cy, S: 36,
+		},
+		{
+			Words: []Word{W("Đưa", 8), W("em", 8), W("đi", 8), W("về", 8), W("nhà.", 8)}, // sum: 40
+			LD:    70,                                                                    // total: 110
+			C:     wht, X: cx, Y: cy, S: 38,
+		},
+		{
+			Words: []Word{W("Là", 10), W("la", 10), W("laa", 10)}, // sum: 30
+			LD:    60,                                             // total: 90
+			C:     pnk, X: cx, Y: cy, S: 44,
+		},
 	}
 }
