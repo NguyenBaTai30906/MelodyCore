@@ -112,21 +112,50 @@ function Setup-PhongRust {
     # Clean debug artifacts if they exist to save space
     if (Test-Path "target\debug") { Remove-Item -Recurse -Force "target\debug" }
     
-    cargo run --release
+    Write-Host "Run 'cargo run' inside 'phong-rust' folder to start." -ForegroundColor Yellow
+}
+
+function Setup-AiDuaEmVeGo {
+    Write-Host "`n=== Setting up Ai dua em ve (Go) ===" -ForegroundColor Cyan
+    
+    $goPath = "C:\Program Files\Go\bin\go.exe"
+    if (-not (Test-Path $goPath)) {
+        $goPath = "go" # Try PATH
+    }
+    
+    try {
+        & $goPath version | Out-Null
+    } catch {
+        Write-Error "Go compiler not found! Please install Go from https://go.dev/dl/"
+        return
+    }
+
+    $goDir = Join-Path $BaseDir "aiduaemve-go"
+    if (-not (Test-Path $goDir)) {
+        Write-Error "Project directory 'aiduaemve-go' not found!"
+        return
+    }
+    
+    Set-Location $goDir
+    Write-Host "Installing dependencies..." -ForegroundColor Cyan
+    & $goPath mod tidy
+    
+    Write-Host "Running Ai dua em ve..." -ForegroundColor Green
+    & $goPath run .
 }
 
 # === Main Menu ===
 Clear-Host
 Write-Host "=== MelodyCore Installer ===" -ForegroundColor Magenta
 Write-Host "1. Phong VSTRA (Rust) - Lyric Video"
-Write-Host "2. Ai dua em ve (Go) - *Coming Soon*"
+Write-Host "2. Ai dua em ve (Go) - *Ebiten Visualizer*"
 Write-Host "3. Exit"
 
 $choice = Read-Host "Select a project to setup [1-3]"
 
 switch ($choice) {
     "1" { Setup-PhongRust }
-    "2" { Write-Host "This project is not yet available." -ForegroundColor Yellow }
+    "2" { Setup-AiDuaEmVeGo }
     default { Write-Host "Exiting." }
 }
 
