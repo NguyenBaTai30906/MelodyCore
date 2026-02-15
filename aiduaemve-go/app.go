@@ -11,7 +11,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
@@ -194,15 +193,14 @@ func (g *App) Draw(screen *ebiten.Image) {
 		}
 		img := g.meters[meterIdx%len(g.meters)]
 		op := &ebiten.DrawImageOptions{}
-		// Scaled to 320x240 for high clarity
+		op.Filter = ebiten.FilterLinear // Use linear filtering for smoother scaling
 		mw, mh := 320.0, 240.0
 		op.GeoM.Scale(mw/float64(img.Bounds().Dx()), mh/float64(img.Bounds().Dy()))
 		op.GeoM.Translate(20, 20)
 		screen.DrawImage(img, op)
 	}
 
-	// Draw scanlines effect
-	drawScanlines(screen)
+	// [REMOVED SCANLINES AS REQUESTED]
 
 	// Draw lyrics
 	if g.currentIdx < len(g.verses) && fontSource != nil {
@@ -235,26 +233,8 @@ func (g *App) Draw(screen *ebiten.Image) {
 			text.Draw(screen, displayed, face, mainOp)
 		}
 	}
-
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Ai Dua Em Ve - TIA | MelodyCore (Go)\nTicks: %d", g.totalTicks))
 }
 
 func (g *App) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
-}
-
-// === Effects ===
-
-var scanlineImg *ebiten.Image
-
-func drawScanlines(screen *ebiten.Image) {
-	if scanlineImg == nil {
-		scanlineImg = ebiten.NewImage(screenWidth, screenHeight)
-		for y := 0; y < screenHeight; y += 3 {
-			for x := 0; x < screenWidth; x++ {
-				scanlineImg.Set(x, y, color.RGBA{0, 0, 0, 30})
-			}
-		}
-	}
-	screen.DrawImage(scanlineImg, nil)
 }
