@@ -25,25 +25,27 @@ func GetVerses() []V {
 	cy := screenHeight / 2
 
 	return []V{
-		// Verse 1 ~6s
-		{"Đêm nay, sẽ thật dài", 6, 20, pnk, cx + 80, cy + 40, 34},
-		{"Em cũng đã mệt nhoài", 6, 20, crm, cx - 80, cy - 20, 34},
-		{"Sương rơi đêm lạnh đầy", 6, 25, cyn, cx + 40, cy + 60, 36},
-		{"Vậy thì ai đưa em về đêm nay?", 6, 40, wht, cx, cy, 38},
+		// Verse 1 (1380 Ticks total target)
+		{"Đêm nay,", 0, 40, pnk, cx + 80, cy + 40, 34},               // 40
+		{"sẽ thật dài", 5, 60, pnk, cx + 80, cy + 40, 34},            // 15+60=75  (Sum: 115)
+		{"Em cũng đã mệt nhoài", 5, 70, crm, cx - 80, cy - 20, 34},   // 25+70=95  (Sum: 210)
+		{"Sương rơi đêm lạnh đầy", 5, 70, cyn, cx + 40, cy + 60, 36}, // 25+70=95  (Sum: 305)
+		{"Vậy thì ai đưa em về đêm nay?", 4, 80, wht, cx, cy, 38},    // 32+80=112 (Sum: 417)
 
-		// Chorus ~7s
-		{"Take me back back home", 6, 30, pnk, cx - 120, cy - 40, 40},
-		{"Đường về cũng chẳng có xa", 7, 30, crm, cx + 60, cy + 50, 36},
-		{"Đưa em về qua ba ngã năm", 7, 30, cyn, cx - 40, cy, 34},
-		{"Năm ngã ba là nhà", 8, 40, wht, cx + 100, cy - 60, 38},
+		// Chorus
+		{"Take me back back home", 4, 70, pnk, cx - 120, cy - 40, 40},   // 20+70=90  (Sum: 507)
+		{"Đường về cũng chẳng có xa", 5, 70, crm, cx + 60, cy + 50, 36}, // 30+70=100 (Sum: 607)
+		{"Đưa em về qua ba ngã năm", 5, 70, cyn, cx - 40, cy, 34},       // 35+70=105 (Sum: 712)
+		{"Năm ngã ba là nhà", 5, 90, wht, cx + 100, cy - 60, 38},        // 25+90=115 (Sum: 827)
 
-		// Chorus 2 ~6s
-		{"Take me back back home", 6, 25, pnk, cx + 80, cy + 30, 40},
-		{"Đường về cũng chẳng có xa", 6, 25, crm, cx - 100, cy - 50, 36},
-		{"Đêm khuya rồi sao không có ai?", 6, 30, cyn, cx, cy + 80, 36},
-		{"Đưa em đi về nhà.", 8, 30, wht, cx - 40, cy, 38},
+		// Chorus 2
+		{"Take me back back home", 4, 70, pnk, cx + 80, cy + 30, 40},     // 20+70=90  (Sum: 917)
+		{"Đường về cũng chẳng có xa", 4, 70, crm, cx - 100, cy - 50, 36}, // 24+70=94  (Sum: 1011)
+		{"Đêm khuya rồi sao không có ai?", 4, 80, cyn, cx, cy + 80, 36},  // 28+80=108 (Sum: 1119)
+		{"Đưa em đi về nhà.", 5, 80, wht, cx - 40, cy, 38},               // 25+80=105 (Sum: 1224)
 
-		// Outro ~1s
-		{"Là la laa...", 10, 60, pnk, cx, cy, 44},
+		// Outro: 1380 - 1224 = 156 ticks total
+		// Word count 3 * 8 = 24. LD = 156 - 24 = 132.
+		{"Là la laa...", 8, 132, pnk, cx, cy, 44}, // 24+132=156 (Total: 1380)
 	}
 }
