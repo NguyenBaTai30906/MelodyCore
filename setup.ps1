@@ -2,13 +2,32 @@ $ErrorActionPreference = "Stop"
 
 # Detect if running from script file or web content
 $scriptPath = $MyInvocation.MyCommand.Path
-if (-not $scriptPath) {
-    # Running via IRM/IEX (Web) -> Use current directory
-    $BaseDir = Get-Location
-}
-else {
+$BaseDir = Get-Location
+
+if ($scriptPath) {
     # Running via File -> Use script directory
     $BaseDir = Split-Path -Parent $scriptPath
+}
+
+# Check if we are in the project root (look for phong-rust)
+$phongCheck = Join-Path $BaseDir "phong-rust"
+
+if (-not (Test-Path $phongCheck)) {
+    Write-Host "Project not found. Bootstrapping MelodyCore..." -ForegroundColor Cyan
+    
+    # Try cloning into current directory
+    try {
+        git clone https://github.com/NguyenBaTai30906/MelodyCore.git .
+        if ($LASTEXITCODE -ne 0) {
+            # If failed (non-empty dir), clone into subdir
+            Write-Host "Directory not empty, cloning into 'MelodyCore'..." -ForegroundColor Yellow
+            git clone https://github.com/NguyenBaTai30906/MelodyCore.git
+            $BaseDir = Join-Path $BaseDir "MelodyCore"
+        }
+    }
+    catch {
+        Write-Error "Git clone failed. Ensure Git is installed."
+    }
 }
 
 $depsDir = Join-Path $BaseDir "deps"
