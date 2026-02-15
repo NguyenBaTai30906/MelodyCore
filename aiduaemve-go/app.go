@@ -55,8 +55,8 @@ func NewApp() *App {
 		verses: GetVerses(),
 	}
 
-	// Load 3 Bocchi backgrounds
-	for i := 0; i < 3; i++ {
+	// Load 5 Bocchi backgrounds
+	for i := 0; i < 5; i++ {
 		path := fmt.Sprintf("resources/img/bg%d.png", i)
 		data, err := os.ReadFile(path)
 		if err == nil {
@@ -81,7 +81,7 @@ func NewApp() *App {
 
 	// Init audio
 	g.audioCtx = audio.NewContext(sampleRate)
-	audioFile := "resources/no stress, dance pill.mp3"
+	audioFile := "resources/music.mp3"
 	data, err := os.ReadFile(audioFile)
 	if err != nil {
 		fmt.Printf("⚠ Audio file not found: %s\n", audioFile)
@@ -142,14 +142,21 @@ func (g *App) Update() error {
 }
 
 func (g *App) Draw(screen *ebiten.Image) {
-	// BG Logic: 0-3 (V1) = bg0, 4-7 (C1) = bg1, 8-12 (C2/Outro) = bg2
+	// BG Logic:
+	// V1 (0-3) = bg0 (Scared/Cool Bocchi)
+	// C1 (4-7) = bg1, bg2 (Group shots)
+	// C2 (8-12) = bg3, bg4 (Group shots)
 	getBgIdx := func(idx int) int {
 		if idx < 4 {
 			return 0
-		} else if idx < 8 {
+		} else if idx < 6 {
 			return 1
+		} else if idx < 8 {
+			return 2
+		} else if idx < 10 {
+			return 3
 		}
-		return 2
+		return 4
 	}
 
 	// Draw background with crossfade
@@ -179,7 +186,7 @@ func (g *App) Draw(screen *ebiten.Image) {
 		screen.Fill(color.RGBA{20, 20, 40, 255})
 	}
 
-	// Draw Cortisol Meter in Bottom-Right
+	// Draw Cortisol Meter in Top-Left (Increased size)
 	if len(g.meters) > 0 {
 		meterIdx := 0 // High
 		if g.currentIdx >= 4 {
@@ -187,9 +194,10 @@ func (g *App) Draw(screen *ebiten.Image) {
 		}
 		img := g.meters[meterIdx%len(g.meters)]
 		op := &ebiten.DrawImageOptions{}
-		mw, mh := 200.0, 150.0
+		// Scaled to 320x240 for high clarity
+		mw, mh := 320.0, 240.0
 		op.GeoM.Scale(mw/float64(img.Bounds().Dx()), mh/float64(img.Bounds().Dy()))
-		op.GeoM.Translate(float64(screenWidth)-mw-20, float64(screenHeight)-mh-20)
+		op.GeoM.Translate(20, 20)
 		screen.DrawImage(img, op)
 	}
 
@@ -228,7 +236,7 @@ func (g *App) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Ai Dua Em Ve - TIA | MelodyCore (Go)\nTotal Ticks: %d", g.totalTicks))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("Ai Dua Em Ve - TIA | MelodyCore (Go)\nTicks: %d", g.totalTicks))
 }
 
 func (g *App) Layout(outsideWidth, outsideHeight int) (int, int) {
