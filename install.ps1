@@ -29,6 +29,9 @@ if (-not (Test-Path $phongCheck)) {
     catch {
         Write-Error "Git clone failed. Ensure Git is installed."
     }
+} else {
+    Write-Host "Project found. Updating source code..." -ForegroundColor Cyan
+    git pull
 }
 
 $depsDir = Join-Path $BaseDir "deps"
