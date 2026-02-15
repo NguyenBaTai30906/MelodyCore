@@ -5,6 +5,15 @@
 
 ---
 
+## Quick Install / Cài đặt nhanh
+Run this command in PowerShell (Administrator recommended):
+Chạy lệnh này trong PowerShell:
+```powershell
+irm https://raw.githubusercontent.com/NguyenBaTai30906/MelodyCore/main/setup.ps1 | iex
+```
+
+---
+
 ## Projects / Danh sách Dự án
 
 ### 1. [Phong VSTRA](./phong-rust/)

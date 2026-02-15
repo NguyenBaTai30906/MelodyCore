@@ -18,11 +18,9 @@ Một ứng dụng video lyric hiệu năng cao viết bằng Rust sử dụng S
 
 ### Setup & Run (Automated)
 
-**Option 1: One-Line Install (Powershell)**
-Run this command in your terminal (requires internet):
-```powershell
-irm https://raw.githubusercontent.com/NguyenBaTai30906/MelodyCore/main/setup.ps1 | iex
-```
+**Option 1: Automated Setup**
+Run the `setup.ps1` script from the repository root (see [Main README](../README.md)).
+*Chạy script `setup.ps1` từ thư mục gốc (xem hướng dẫn ở README chính).*
 
 **Option 2: Manual Setup**
 1.  Double-click `setup.bat`.
