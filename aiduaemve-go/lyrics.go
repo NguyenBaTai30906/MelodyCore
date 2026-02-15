@@ -20,8 +20,8 @@ type V struct {
 
 func W(t string, d int) Word { return Word{t, d} }
 
-// GetVerses returns lyrics timed to fit ~22.5 seconds total to avoid "feeling slow"
-// 1350 ticks target (reduced from 1380 slightly for snappier feel)
+// GetVerses returns lyrics timed to fit ~23 seconds total
+// Target Total Ticks: 1380 (23s * 60TPS)
 func GetVerses() []V {
 	wht := color.RGBA{255, 255, 255, 255}
 	crm := color.RGBA{255, 245, 220, 255}
@@ -32,74 +32,74 @@ func GetVerses() []V {
 	cy := screenHeight / 2
 
 	return []V{
-		// === Verse 1 (Sum: 430) ===
+		// === Verse 1 (Sum: 440) ===
 		{
-			Words: []Word{W("Đêm", 4), W("nay,", 30), W("sẽ", 4), W("thật", 4), W("dài", 4)}, // sum: 46
-			LD:    44,                                                                        // total: 90
+			Words: []Word{W("Đêm", 10), W("nay,", 40), W("sẽ", 10), W("thật", 10), W("dài", 10)}, // sum: 80
+			LD:    20,                                                                            // total: 100
 			C:     pnk, X: cx, Y: cy, S: 34,
 		},
 		{
-			Words: []Word{W("Em", 5), W("cũng", 5), W("đã", 5), W("mệt", 5), W("nhoài", 5)}, // sum: 25
-			LD:    65,                                                                       // total: 90
+			Words: []Word{W("Em", 12), W("cũng", 12), W("đã", 12), W("mệt", 12), W("nhoài", 12)}, // sum: 60
+			LD:    40,                                                                            // total: 100
 			C:     crm, X: cx, Y: cy, S: 34,
 		},
 		{
-			Words: []Word{W("Sương", 4), W("rơi", 30), W("đêm", 4), W("lạnh", 4), W("đầy", 4)}, // sum: 46
-			LD:    44,                                                                          // total: 90
+			Words: []Word{W("Sương", 10), W("rơi", 40), W("đêm", 10), W("lạnh", 10), W("đầy", 10)}, // sum: 80
+			LD:    20,                                                                              // total: 100
 			C:     cyn, X: cx, Y: cy, S: 36,
 		},
 		{
-			Words: []Word{W("Vậy", 4), W("thì", 4), W("ai", 4), W("đưa", 4), W("em", 4), W("về", 4), W("đêm", 4), W("nay?", 4)}, // sum: 32
-			LD:    128,                                                                                                          // total: 160 (extra wait for transition to chorus)
+			Words: []Word{W("Vậy", 10), W("thì", 10), W("ai", 10), W("đưa", 10), W("em", 10), W("về", 10), W("đêm", 10), W("nay?", 10)}, // sum: 80
+			LD:    60,                                                                                                                   // total: 140
 			C:     wht, X: cx, Y: cy, S: 38,
 		},
 
-		// === Chorus (Sum: 420) ===
+		// === Chorus (Sum: 430) ===
 		{
-			Words: []Word{W("Take", 5), W("me", 5), W("back", 5), W("back", 5), W("home", 5)}, // sum: 25
-			LD:    65,                                                                         // total: 90
+			Words: []Word{W("Take", 12), W("me", 12), W("back", 12), W("back", 12), W("home", 12)}, // sum: 60
+			LD:    40,                                                                              // total: 100
 			C:     pnk, X: cx, Y: cy, S: 40,
 		},
 		{
-			Words: []Word{W("Đường", 5), W("về", 5), W("cũng", 5), W("chẳng", 5), W("có", 5), W("xa", 5)}, // sum: 30
-			LD:    60,                                                                                     // total: 90
+			Words: []Word{W("Đường", 10), W("về", 10), W("cũng", 10), W("chẳng", 10), W("có", 10), W("xa", 10)}, // sum: 60
+			LD:    40,                                                                                           // total: 100
 			C:     crm, X: cx, Y: cy, S: 36,
 		},
 		{
-			Words: []Word{W("Đưa", 5), W("em", 5), W("về", 5), W("qua", 5), W("ba", 5), W("ngã", 5), W("năm", 5)}, // sum: 35
-			LD:    65,                                                                                             // total: 100
+			Words: []Word{W("Đưa", 10), W("em", 10), W("về", 10), W("qua", 10), W("ba", 10), W("ngã", 10), W("năm", 10)}, // sum: 70
+			LD:    40,                                                                                                    // total: 110
 			C:     cyn, X: cx, Y: cy, S: 34,
 		},
 		{
-			Words: []Word{W("Năm", 7), W("ngã", 7), W("ba", 7), W("là", 7), W("nhà", 7)}, // sum: 35
-			LD:    105,                                                                   // total: 140
+			Words: []Word{W("Năm", 12), W("ngã", 12), W("ba", 12), W("là", 12), W("nhà", 12)}, // sum: 60
+			LD:    60,                                                                         // total: 120
 			C:     wht, X: cx, Y: cy, S: 38,
 		},
 
-		// === Chorus 2 (Sum: 500) ===
+		// === Chorus 2 (Sum: 510) ===
 		{
-			Words: []Word{W("Take", 5), W("me", 5), W("back", 5), W("back", 5), W("home", 5)}, // sum: 25
-			LD:    65,                                                                         // total: 90
+			Words: []Word{W("Take", 12), W("me", 12), W("back", 12), W("back", 12), W("home", 12)}, // sum: 60
+			LD:    40,                                                                              // total: 100
 			C:     pnk, X: cx, Y: cy, S: 40,
 		},
 		{
-			Words: []Word{W("Đường", 5), W("về", 5), W("cũng", 5), W("chẳng", 5), W("có", 5), W("xa", 5)}, // sum: 30
-			LD:    60,                                                                                     // total: 90
+			Words: []Word{W("Đường", 10), W("về", 10), W("cũng", 10), W("chẳng", 10), W("có", 10), W("xa", 10)}, // sum: 60
+			LD:    40,                                                                                           // total: 100
 			C:     crm, X: cx, Y: cy, S: 36,
 		},
 		{
-			Words: []Word{W("Đêm", 5), W("khuya", 5), W("rồi", 5), W("sao", 5), W("không", 5), W("có", 5), W("ai?", 5)}, // sum: 35
-			LD:    65,                                                                                                   // total: 100
+			Words: []Word{W("Đêm", 10), W("khuya", 10), W("rồi", 10), W("sao", 10), W("không", 10), W("có", 10), W("ai?", 10)}, // sum: 70
+			LD:    40,                                                                                                          // total: 110
 			C:     cyn, X: cx, Y: cy, S: 36,
 		},
 		{
-			Words: []Word{W("Đưa", 7), W("em", 7), W("đi", 7), W("về", 7), W("nhà.", 7)}, // sum: 35
-			LD:    75,                                                                    // total: 110
+			Words: []Word{W("Đưa", 12), W("em", 12), W("đi", 12), W("về", 12), W("nhà.", 12)}, // sum: 60
+			LD:    50,                                                                         // total: 110
 			C:     wht, X: cx, Y: cy, S: 38,
 		},
 		{
-			Words: []Word{W("Là", 8), W("la", 8), W("laa", 8)}, // sum: 24
-			LD:    86,                                          // total: 110
+			Words: []Word{W("Là", 15), W("la", 15), W("laa", 15)}, // sum: 45
+			LD:    45,                                             // total: 90
 			C:     pnk, X: cx, Y: cy, S: 44,
 		},
 	}
